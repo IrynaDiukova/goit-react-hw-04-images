@@ -18,33 +18,34 @@ const App = () => {
   const [totalPages, setTotalPages] = useState(1);
   
   useEffect(() => {
-    if (!search) return;
-    getImages();
-  // eslint-disable-next-line
-  }, [search, page]);
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const getImages = async () => {
-    setStatus('loading');
-    try {
-      const { hits, totalHits } = await pixabayAPI.searchImages(search, page);
-
-      if (!hits.length) {
-         toast.info('Sorry, but there are no results for your search.');
-        return;
-      }
-
-      setImages([...images, ...hits]);
-      if (page === 1) {
-        toast.info(`Hooray! We found ${totalHits} image(s).`);
-        calculateTotalPages(totalHits);
-      }
-    } catch (error) {
-      toast.error(error.message);
-    } finally {
-      setStatus('resolved');
+    if (!search) {
+      setStatus('start')
+      return;
     }
-  }
+    const getImages = async () => {
+      setStatus('loading');
+      try {
+        const { hits, totalHits } = await pixabayAPI.searchImages(search, page);
+
+        if (!hits.length) {
+          toast.info('Sorry, but there are no results for your search.');
+          return;
+        }
+
+        setImages(prevState => [...prevState, ...hits]);
+        if (page === 1) {
+          toast.info(`Hooray! We found ${totalHits} image(s).`);
+          calculateTotalPages(totalHits);
+        }
+      } catch (error) {
+        toast.error(error.message);
+      } finally {
+        setStatus('resolved');
+      }
+    }
+    getImages();
+
+  }, [search, page]);
 
   const calculateTotalPages = total => setTotalPages (Math.ceil(total / 12));
 
